@@ -34,7 +34,7 @@ func NewS3Service(url, accessKey, accessSecret, bucketName string) (*S3Service, 
 	}
 
 	if !exists {
-		return nil, fmt.Errorf("s3 bucket doesn't (%s) doesn't exist", bucketName)
+		return nil, fmt.Errorf("s3 bucket (%s) doesn't exist", bucketName)
 	}
 
 	urlValues := make(netUrl.Values)

@@ -62,10 +62,15 @@ func (s *S3Service) AddLifeCycleRule(ruleID, folderPath string, daysToExpiry int
 	return s.s3Client.SetBucketLifecycle(s.bucketName, lifeCycleString)
 }
 
+// UploadFile uploads a file from the reader to the specified path
+func (s *S3Service) UploadFile(path string, contentType string, data io.Reader) error {
+	_, err := s.s3Client.PutObject(s.bucketName, path, data, -1, minio.PutObjectOptions{ContentType: contentType})
+	return err
+}
+
 // UploadJSONFile uploads a json file from the reader to the specified path
 func (s *S3Service) UploadJSONFile(path string, data io.Reader) error {
-	_, err := s.s3Client.PutObject(s.bucketName, path, data, -1, minio.PutObjectOptions{ContentType: "application/json"})
-	return err
+	return s.UploadFile(path, "application/json", data)
 }
 
 // GetFileURL generates a link to the file at the given path
@@ -74,15 +79,21 @@ func (s *S3Service) GetFileURL(path string, expiration time.Duration) (*url.URL,
 	return s.s3Client.PresignedGetObject(s.bucketName, path, expiration, s.urlValues)
 }
 
-// UploadJSONFileWithLink uploads a json file and returns a public link to the file
+// UploadFileWithLink uploads a file and returns a public link to the file
 // that expires after the specified duration
-func (s *S3Service) UploadJSONFileWithLink(path string, data io.Reader, expiration time.Duration) (*url.URL, error) {
-	_, err := s.s3Client.PutObject(s.bucketName, path, data, -1, minio.PutObjectOptions{ContentType: "application/json"})
+func (s *S3Service) UploadFileWithLink(path string, contentType string, data io.Reader, expiration time.Duration) (*url.URL, error) {
+	_, err := s.s3Client.PutObject(s.bucketName, path, data, -1, minio.PutObjectOptions{ContentType: contentType})
 	if err != nil {
 		return nil, err
 	}
 
 	return s.s3Client.PresignedGetObject(s.bucketName, path, 24*time.Hour, s.urlValues)
+}
+
+// UploadJSONFileWithLink uploads a json file and returns a public link to the file
+// that expires after the specified duration
+func (s *S3Service) UploadJSONFileWithLink(path string, data io.Reader, expiration time.Duration) (*url.URL, error) {
+	return s.UploadFileWithLink(path, "application/json", data, expiration)
 }
 
 // DownloadDirectory concurrently downloads the remote s3 directory path

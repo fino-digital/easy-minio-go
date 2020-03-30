@@ -22,8 +22,8 @@ type S3Service struct {
 }
 
 // NewS3Service creates a new instace of the s3 service using the provided details
-func NewS3Service(url, accessKey, accessSecret, bucketName string) (*S3Service, error) {
-	s3Client, err := minio.New(url, accessKey, accessSecret, true)
+func NewS3Service(url, accessKey, accessSecret, bucketName string, ssl bool) (*S3Service, error) {
+	s3Client, err := minio.New(url, accessKey, accessSecret, ssl)
 	if err != nil {
 		return nil, err
 	}
